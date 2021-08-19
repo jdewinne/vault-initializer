@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vault-initializer
+  labels:
+    app: vault-initializer
+spec:
+  template:
+    metadata:
+      labels:
+        app: vault-initializer
+    spec:
+      containers:
+        - name: vault-initializer
+          image: vault:1.8.1
+          command: ["/bin/sh", "-c"]
+          args:
+            - vault operator init -address=http://vault-0.vault-internal:8200 > /tmp/keys.txt;
+              vault operator unseal -address=http://vault-0.vault-internal:8200 $(cat /tmp/keys.txt | awk 'NR==1{print $4}');
+              vault operator unseal -address=http://vault-0.vault-internal:8200 $(cat /tmp/keys.txt | awk 'NR==2{print $4}');
+              vault operator unseal -address=http://vault-0.vault-internal:8200 $(cat /tmp/keys.txt | awk 'NR==3{print $4}');
+              cat /tmp/keys.txt;
+      restartPolicy: Never
+  backoffLimit: 3    

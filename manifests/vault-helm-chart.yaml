@@ -1,0 +1,29 @@
+apiVersion: kots.io/v1beta1
+kind: HelmChart
+metadata:
+  name: vault
+spec:
+  # chart identifies a matching chart from a .tgz
+  chart:
+    name: vault
+    chartVersion: 0.14.0
+
+  helmVersion: v3
+  # values are used in the customer environment, as a pre-render step
+  # these values will be supplied to helm template
+  values:
+    server:
+      dataStorage:
+        enabled: false
+      standalone:
+        enabled: true
+        config: |
+          ui = true
+          listener "tcp" {
+            tls_disable = 1
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+          }
+          storage "file" {
+            path = "/vault/data"
+          }
